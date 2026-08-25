@@ -1,0 +1,6 @@
+id: check-certificate
+name: Check TLS certificate
+risk: safe
+runner: ssh
+timeout: 30
+command: openssl x509 -in /etc/ssl/certs/service.crt -noout -subject -issuer -dates
