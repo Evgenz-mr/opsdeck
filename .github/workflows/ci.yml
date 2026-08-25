@@ -21,4 +21,7 @@ jobs:
           for p in list(pathlib.Path('config').rglob('*.yaml'))+list(pathlib.Path('actions').rglob('*.yaml'))+list(pathlib.Path('runbooks').rglob('*.yaml')):
               yaml.safe_load(p.read_text()); print('OK',p)
           PY
-      - run: docker build -t opsdeck:ci .
+      - name: Validate Compose
+        run: docker compose config
+      - name: Build container
+        run: docker build -t opsdeck:ci .
