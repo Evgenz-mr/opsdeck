@@ -1,0 +1,6 @@
+id: check-service
+name: Check systemd service
+risk: safe
+runner: ssh
+timeout: 30
+command: systemctl --no-pager --full status victoriametrics

@@ -1,0 +1,6 @@
+id: update-certificate
+name: Force TLS certificate update
+risk: caution
+runner: ssh
+timeout: 180
+command: sudo /opt/scripts/update-cert.sh

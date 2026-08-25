@@ -1,0 +1,48 @@
+approvals:
+  enabled: false
+
+environments:
+  dev:
+    description: Development Kubernetes environment
+    kubernetes:
+      context: dev
+      namespaces: [monitoring, payments, integration]
+  stable:
+    description: Stable integration environment
+    kubernetes:
+      context: stable
+      namespaces: [monitoring, payments, integration]
+  sandbox:
+    description: Sandbox environment
+    kubernetes:
+      context: sandbox
+      namespaces: [sandbox]
+  ift:
+    description: IFT environment
+    kubernetes:
+      context: ift
+      namespaces: [monitoring, payments, integration]
+
+services:
+  victoriametrics:
+    display_name: VictoriaMetrics
+    description: Metrics platform and cluster health
+    targets:
+      stable:
+        vmselect-01:
+          host: 10.20.10.11
+          user: opsdeck
+          actions: [check-service, update-certificate]
+        vmselect-02:
+          host: 10.20.10.12
+          user: opsdeck
+          actions: [check-service, update-certificate]
+  kafka:
+    display_name: Kafka
+    description: Broker and consumer health
+  postgres:
+    display_name: PostgreSQL
+    description: Primary/replica and connection health
+  s3:
+    display_name: S3
+    description: Object storage health and synthetic checks
