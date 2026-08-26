@@ -1,8 +1,17 @@
 id: victoriametrics-metrics-missing
-title: VictoriaMetrics - metrics are missing
-steps:
-  - {id: vmagent, type: check, description: Check vmagent health}
-  - {id: vminsert, type: check, description: Check vminsert health}
-  - {id: vmstorage, type: check, description: Check vmstorage health and disk usage}
-  - {id: connectivity, type: check, description: Check TCP connectivity between cluster components}
-  - {id: escalation, type: stop, description: Generate escalation report if unresolved}
+title: VictoriaMetrics metrics are missing
+rules:
+  - id: vmstorage-disk-full
+    when: {field: vmstorage_disk_percent, op: gt, value: 95}
+    severity: critical
+    message: vmstorage disk usage is above 95%
+    recommended_action: cleanup-vmstorage-temp
+  - id: vmagent-stopped
+    when: {field: vmagent_active, op: eq, value: false}
+    severity: warning
+    message: vmagent is not active
+    recommended_action: restart-vmagent
+  - id: vminsert-unreachable
+    when: {field: vminsert_reachable, op: eq, value: false}
+    severity: critical
+    message: vminsert is unreachable from the monitored path
