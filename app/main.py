@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="OpsDeck",
     description="Self-service operations portal for engineering teams",
-    version="1.0.0-rc1",
+    version="1.0.0",
     lifespan=lifespan,
 )
 
@@ -43,7 +43,7 @@ app.mount("/static", StaticFiles(directory="/app/app/static"), name="static")
 
 @app.get("/healthz")
 async def healthz():
-    return {"status": "ok", "version": "1.0.0-rc1"}
+    return {"status": "ok", "version": "1.0.0"}
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
