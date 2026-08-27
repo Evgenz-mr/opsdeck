@@ -1,0 +1,6 @@
+id: check-vmstorage-service
+name: Check vmstorage
+risk: safe
+runner: ssh
+timeout: 30
+command: /usr/bin/systemctl is-active vmstorage.service && /usr/bin/systemctl show vmstorage.service --no-pager --property=ActiveState,SubState,MainPID,ExecMainStartTimestamp

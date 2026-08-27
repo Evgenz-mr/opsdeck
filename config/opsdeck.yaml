@@ -7,7 +7,7 @@ environments:
     kubernetes:
       mode: kubeconfig
       context: opsdeck
-      namespaces: [dev]
+      namespaces: [devops-costcalc]
   stable:
     description: Stable integration environment
     kubernetes:
@@ -29,18 +29,43 @@ environments:
 
 services:
   victoriametrics:
-    display_name: VictoriaMetrics
-    description: Metrics platform and cluster health
+    display_name: VictoriaMetrics Cluster
+    type: cluster
+    description: vmselect, vminsert and vmstorage health and certificate operations
     targets:
-      stable:
-        vmselect-01:
-          host: 10.20.10.11
+      ift:
+        vminsert-193:
+          display_name: vminsert-193
+          role: vminsert
+          host: vm-szux-pc-vic-193.vdc03.pc.dev.sbt
           user: opsdeck
-          actions: [check-service, update-certificate]
-        vmselect-02:
-          host: 10.20.10.12
+          tls_port: 8443
+          certificate_path: /opt/victoria-metrics/certs/tls.crt
+          actions:
+            - check-vminsert-service
+            - check-victoriametrics-certificate
+            - renew-victoriametrics-certificate
+        vmselect-194:
+          display_name: vmselect-194
+          role: vmselect
+          host: vm-szux-pc-vic-194.vdc03.pc.dev.sbt
           user: opsdeck
-          actions: [check-service, update-certificate]
+          tls_port: 8443
+          certificate_path: /opt/victoria-metrics/certs/tls.crt
+          actions:
+            - check-vmselect-service
+            - check-victoriametrics-certificate
+            - renew-victoriametrics-certificate
+        vmstorage-195:
+          display_name: vmstorage-195
+          role: vmstorage
+          host: vm-szux-pc-vic-195.vdc03.pc.dev.sbt
+          user: opsdeck
+          certificate_path: /opt/victoria-metrics/certs/tls.crt
+          actions:
+            - check-vmstorage-service
+            - check-victoriametrics-certificate
+            - renew-victoriametrics-certificate
   kafka:
     display_name: Kafka
     description: Broker and consumer health

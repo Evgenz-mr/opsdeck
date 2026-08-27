@@ -17,6 +17,8 @@ set +a
 
 : "${OPSDECK_KUBECONFIG_HOST:?Set OPSDECK_KUBECONFIG_HOST in .env}"
 : "${OPSDECK_DATA_DIR:?Set OPSDECK_DATA_DIR in .env}"
+: "${OPSDECK_ACTION_TOKEN_FILE_HOST:?Set OPSDECK_ACTION_TOKEN_FILE_HOST in .env}"
+: "${OPSDECK_SSH_DIR_HOST:?Set OPSDECK_SSH_DIR_HOST in .env}"
 
 exec podman-compose \
   -t identity \

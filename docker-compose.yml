@@ -10,10 +10,15 @@ services:
       OPSDECK_DB_URL: sqlite+aiosqlite:////data/opsdeck.db
       OPSDECK_APPROVALS_ENABLED: "false"
       OPSDECK_KUBECONFIG: /home/opsdeck/.kube/config
+      OPSDECK_ACTION_TOKEN_FILE: /run/secrets/action-token
+      OPSDECK_SSH_KNOWN_HOSTS: /home/opsdeck/.ssh/known_hosts
+      OPSDECK_SSH_PRIVATE_KEY: /home/opsdeck/.ssh/id_ed25519
     volumes:
       - opsdeck-data:/data
-      - ~/.ssh:/home/opsdeck/.ssh:ro
+      - ./config/opsdeck.yaml:/app/config/opsdeck.yaml:ro
       - ${OPSDECK_KUBECONFIG_HOST:-./secrets/kubeconfig}:/home/opsdeck/.kube/config:ro
+      - ${OPSDECK_ACTION_TOKEN_FILE_HOST:-./secrets/action-token}:/run/secrets/action-token:ro
+      - ${OPSDECK_SSH_DIR_HOST:-./secrets/ssh}:/home/opsdeck/.ssh:ro
     read_only: true
     tmpfs:
       - /tmp
@@ -21,5 +26,6 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+
 volumes:
   opsdeck-data:

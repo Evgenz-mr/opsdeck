@@ -1,0 +1,3 @@
+Cmnd_Alias OPSDECK_VM_CERT = /usr/local/sbin/opsdeck-renew-vm-cert, /usr/bin/openssl x509 -in /opt/victoria-metrics/certs/tls.crt -noout -subject -issuer -serial -dates
+opsdeck ALL=(root) NOPASSWD: OPSDECK_VM_CERT
+Defaults:opsdeck !requiretty

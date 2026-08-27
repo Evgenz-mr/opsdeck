@@ -34,14 +34,87 @@
     </div>
 
     <h2>Services</h2>
-    <div class="grid">
-      {% for name,s in config.get('services',{}).items() %}
-      <article class="card">
-        <h3>{{ s.get('display_name',name) }}</h3>
-        <p>{{ s.get('description','') }}</p>
+    <div class="grid services-grid">
+      {% for service_id,service in config.get('services',{}).items() %}
+      <article class="card service-card">
+        <h3>{{ service.get('display_name',service_id) }}</h3>
+        <p>{{ service.get('description','') }}</p>
+
+        {% for environment,targets in service.get('targets',{}).items() %}
+        <section class="target-group">
+          <h4>{{ environment|upper }}</h4>
+          {% for target_id,target in targets.items() %}
+          <div class="target">
+            <div>
+              <strong>{{ target.get('display_name',target_id) }}</strong>
+              <small>{{ target.get('role','') }} · {{ target.get('host','') }}</small>
+            </div>
+            <div class="action-list">
+              {% for action_id in target.get('actions',[]) %}
+              {% set action = actions.get(action_id,{}) %}
+              <button
+                type="button"
+                class="button action-button risk-{{ action.get('risk','unknown') }}"
+                data-url="/api/actions/{{ environment }}/{{ service_id }}/{{ target_id }}/{{ action_id }}"
+                data-action-name="{{ action.get('name',action_id) }}"
+                data-target-name="{{ target.get('display_name',target_id) }}"
+              >{{ action.get('name',action_id) }}</button>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </section>
+        {% endfor %}
       </article>
       {% endfor %}
     </div>
+
+    <section class="operator-panel">
+      <h2>Operator actions</h2>
+      <p>Remote actions require HTTPS (or localhost through an SSH tunnel) and an operator token.</p>
+      <label for="action-token">Operator token</label>
+      <input id="action-token" type="password" autocomplete="off" placeholder="Enter token for this session">
+      <pre id="action-output" aria-live="polite">No action has been run.</pre>
+    </section>
   </main>
+
+  <script>
+    const tokenInput = document.querySelector('#action-token');
+    const output = document.querySelector('#action-output');
+    const secureOrigin = window.isSecureContext || ['127.0.0.1', 'localhost'].includes(window.location.hostname);
+
+    document.querySelectorAll('.action-button').forEach((button) => {
+      if (!secureOrigin) {
+        button.disabled = true;
+        button.title = 'Configure HTTPS or use an SSH tunnel to localhost';
+      }
+      button.addEventListener('click', async () => {
+        const token = tokenInput.value.trim();
+        if (!token) {
+          output.textContent = 'Enter the operator token first.';
+          tokenInput.focus();
+          return;
+        }
+        const actionName = button.dataset.actionName;
+        const targetName = button.dataset.targetName;
+        if (!window.confirm(`Run "${actionName}" on ${targetName}?`)) return;
+
+        button.disabled = true;
+        output.textContent = `Running ${actionName} on ${targetName}...`;
+        try {
+          const response = await fetch(button.dataset.url, {
+            method: 'POST',
+            headers: {'X-OpsDeck-Action-Token': token},
+          });
+          const body = await response.json();
+          output.textContent = JSON.stringify(body, null, 2);
+        } catch (error) {
+          output.textContent = `Request failed: ${error}`;
+        } finally {
+          button.disabled = !secureOrigin;
+        }
+      });
+    });
+  </script>
 </body>
 </html>
