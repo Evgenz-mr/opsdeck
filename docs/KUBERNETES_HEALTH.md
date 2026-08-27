@@ -5,6 +5,9 @@ Extended namespace health covers:
 - Deployments;
 - StatefulSets;
 - Pods and restart counts;
+- declared container images and versions;
+- actual running image IDs and digests;
+- init container images;
 - waiting reasons such as CrashLoopBackOff;
 - Jobs;
 - PVC state;
@@ -13,6 +16,24 @@ Extended namespace health covers:
 - recent Warning events.
 
 This remains read-only. Mutating Kubernetes actions should be separate allowlisted actions with preflight checks.
+
+## Image and service version inventory
+
+Every Deployment, StatefulSet, and Pod includes `containers` and
+`init_containers`. Each container reports the declared image reference,
+repository, tag, detected version, declared digest, actual runtime image ID,
+actual digest, readiness, and restart count where the Kubernetes API provides
+that data.
+
+Version detection prefers the standard `app.kubernetes.io/version` label,
+then the `version` label, then the image tag or digest. Service detection
+prefers `app.kubernetes.io/name`, then `app` or `k8s-app`, and finally the
+container name.
+
+The top-level `images` array aggregates unique declared images across the
+namespace and lists their services, containers, workloads, pods, versions,
+tags, and runtime digests. This makes mixed-version rollouts and differences
+between declared tags and actually running image digests visible to analysts.
 
 ## Connection mode
 
@@ -114,6 +135,6 @@ After `docker compose up -d`, request an allowlisted namespace:
 curl -sS http://127.0.0.1:8080/api/health/kubernetes/stable/payments
 ```
 
-The response includes Deployments, StatefulSets, Pods, Jobs, PVCs, HPAs, PDBs,
-recent Warning events, and a compact object-count summary. Kubernetes requests
-have a ten-second timeout.
+The response includes Deployments, StatefulSets, Pods, their container image
+inventory, Jobs, PVCs, HPAs, PDBs, recent Warning events, and a compact summary.
+Kubernetes requests have a ten-second timeout.
