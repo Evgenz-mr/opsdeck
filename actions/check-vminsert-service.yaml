@@ -1,6 +1,0 @@
-id: check-vminsert-service
-name: Check vminsert
-risk: safe
-runner: ssh
-timeout: 30
-command: /usr/bin/systemctl is-active vminsert.service && /usr/bin/systemctl show vminsert.service --no-pager --property=ActiveState,SubState,MainPID,ExecMainStartTimestamp

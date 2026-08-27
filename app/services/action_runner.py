@@ -51,9 +51,7 @@ def verify_action_token(provided_token: str | None):
         raise PermissionError("Invalid action token")
 
 
-async def run_ssh_action(host: str, user: str, action_id: str):
-    action = load_action(action_id)
-    timeout = int(action.get("timeout", 120))
+async def run_ssh_command(host: str, user: str, command: str, timeout: int = 120):
     known_hosts = os.getenv("OPSDECK_SSH_KNOWN_HOSTS", "/home/opsdeck/.ssh/known_hosts")
     private_key = os.getenv("OPSDECK_SSH_PRIVATE_KEY", "/home/opsdeck/.ssh/id_ed25519")
 
@@ -64,8 +62,18 @@ async def run_ssh_action(host: str, user: str, action_id: str):
         client_keys=[private_key],
     ) as connection:
         result = await asyncio.wait_for(
-            connection.run(action["command"], check=False),
+            connection.run(command, check=False),
             timeout=timeout,
         )
     status = "success" if result.exit_status == 0 else "failed"
     return status, (result.stdout or "") + (result.stderr or "")
+
+
+async def run_ssh_action(host: str, user: str, action_id: str):
+    action = load_action(action_id)
+    return await run_ssh_command(
+        host,
+        user,
+        action["command"],
+        int(action.get("timeout", 120)),
+    )

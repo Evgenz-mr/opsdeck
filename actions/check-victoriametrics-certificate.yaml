@@ -1,6 +1,0 @@
-id: check-victoriametrics-certificate
-name: Check TLS certificate
-risk: safe
-runner: ssh
-timeout: 30
-command: /usr/bin/sudo -n /usr/bin/openssl x509 -in /opt/victoria-metrics/certs/tls.crt -noout -subject -issuer -serial -dates

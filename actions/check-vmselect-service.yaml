@@ -1,6 +1,0 @@
-id: check-vmselect-service
-name: Check vmselect
-risk: safe
-runner: ssh
-timeout: 30
-command: /usr/bin/systemctl is-active vmselect.service && /usr/bin/systemctl show vmselect.service --no-pager --property=ActiveState,SubState,MainPID,ExecMainStartTimestamp
