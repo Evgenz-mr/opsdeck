@@ -45,10 +45,23 @@ vi .env
 
 ```dotenv
 OPSDECK_KUBECONFIG_HOST=/home/user/.kube/opsdeck-config
+OPSDECK_DATA_DIR=/var/lib/opsdeck
 ```
 
 `.env` должен находиться в корне проекта рядом с `podman-compose.yml`.
 Токены и сертификаты в `.env` не добавляются.
+
+Подготовьте постоянный каталог для SQLite audit DB. Контейнер работает с UID
+`10001` и GID `100`:
+
+```bash
+mkdir -p /var/lib/opsdeck
+chown 10001:100 /var/lib/opsdeck
+chmod 0750 /var/lib/opsdeck
+```
+
+Версия podman-compose 0.1.7dev не понимает volume option `U`, поэтому права
+каталога задаются явно на VM, а mount использует только SELinux option `Z`.
 
 ## 3. Проверка kubeconfig
 
@@ -131,7 +144,9 @@ docker stop opsdeck
 
 ```bash
 grep '^OPSDECK_KUBECONFIG_HOST=' .env
+grep '^OPSDECK_DATA_DIR=' .env
 test -f "$(sed -n 's/^OPSDECK_KUBECONFIG_HOST=//p' .env)"
+test -d "$(sed -n 's/^OPSDECK_DATA_DIR=//p' .env)"
 ```
 
 Сборка:
@@ -219,5 +234,4 @@ podman-compose -f podman-compose.yml down
 docker start opsdeck
 ```
 
-Named volume `opsdeck-data` не удаляется командой `down` без отдельного явного
-удаления volume.
+Каталог `/var/lib/opsdeck` и audit DB не удаляются командой `down`.

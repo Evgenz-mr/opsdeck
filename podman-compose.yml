@@ -16,7 +16,7 @@ services:
       OPSDECK_APPROVALS_ENABLED: "false"
       OPSDECK_KUBECONFIG: /home/opsdeck/.kube/config
     volumes:
-      - opsdeck-data:/data:U
+      - ${OPSDECK_DATA_DIR}:/data:Z
       - ./config/opsdeck.yaml:/app/config/opsdeck.yaml:ro,Z
       - ${OPSDECK_KUBECONFIG_HOST}:/home/opsdeck/.kube/config:ro,Z
     read_only: true
@@ -26,6 +26,3 @@ services:
       - no-new-privileges
     cap_drop:
       - ALL
-
-volumes:
-  opsdeck-data:
