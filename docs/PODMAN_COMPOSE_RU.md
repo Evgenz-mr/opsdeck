@@ -24,6 +24,11 @@ false
 Используйте `podman-compose version`. Действие `config` в этой версии также
 отсутствует.
 
+Версия 0.1.7dev несовместима с сетевой настройкой одиночного контейнера внутри
+автоматически созданного Pod на Podman 4.9. Поэтому OpsDeck запускается через
+wrapper `scripts/opsdeck-podman-compose`, который экспортирует `.env` и всегда
+передает `--in-pod false`.
+
 ## 2. Подготовка проекта
 
 Перейдите в каталог, где рядом находятся `podman-compose.yml` и Dockerfile:
@@ -149,22 +154,32 @@ test -f "$(sed -n 's/^OPSDECK_KUBECONFIG_HOST=//p' .env)"
 test -d "$(sed -n 's/^OPSDECK_DATA_DIR=//p' .env)"
 ```
 
+Если предыдущая попытка уже создала пустой Pod, удалите только его:
+
+```bash
+podman pod ps -a
+podman pod rm -f opsdeckrelease100
+```
+
+При первом запуске команда удаления может вернуть `no such pod` — это означает,
+что очищать нечего.
+
 Сборка:
 
 ```bash
-podman-compose -f podman-compose.yml build
+./scripts/opsdeck-podman-compose build
 ```
 
 Запуск:
 
 ```bash
-podman-compose -f podman-compose.yml up -d
+./scripts/opsdeck-podman-compose up -d
 ```
 
 Проверка:
 
 ```bash
-podman-compose -f podman-compose.yml ps
+./scripts/opsdeck-podman-compose ps
 podman logs --tail=200 opsdeck
 curl -sS http://127.0.0.1:8080/healthz
 ```
@@ -202,10 +217,10 @@ curl -sS http://127.0.0.1:8080/api/health/kubernetes/dev/dev \
 ## 9. Управление
 
 ```bash
-podman-compose -f podman-compose.yml logs
-podman-compose -f podman-compose.yml restart
-podman-compose -f podman-compose.yml stop
-podman-compose -f podman-compose.yml start
+./scripts/opsdeck-podman-compose logs
+./scripts/opsdeck-podman-compose restart
+./scripts/opsdeck-podman-compose stop
+./scripts/opsdeck-podman-compose start
 ```
 
 Для автоматического восстановления rootful-контейнеров после перезагрузки VM:
@@ -225,7 +240,7 @@ systemctl status podman-restart.service --no-pager
 Если Podman-версия не стартовала, остановите её:
 
 ```bash
-podman-compose -f podman-compose.yml down
+./scripts/opsdeck-podman-compose down
 ```
 
 Затем можно вернуть ранее остановленный Docker-контейнер:
