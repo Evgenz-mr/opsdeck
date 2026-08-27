@@ -13,7 +13,13 @@ async def k8s_health(environment: str, namespace: str):
     if not env: raise HTTPException(404, "Unknown environment")
     kube = env.get("kubernetes", {})
     if namespace not in kube.get("namespaces", []): raise HTTPException(403, "Namespace is not allowed")
-    return namespace_health(environment, kube.get("context", ""), namespace)
+    return namespace_health(
+        environment,
+        kube.get("context", ""),
+        namespace,
+        kubeconfig_path=kube.get("kubeconfig"),
+        mode=kube.get("mode", "kubeconfig"),
+    )
 @router.post("/actions/{environment}/{service}/{target}/{action_id}")
 async def run_action(environment: str, service: str, target: str, action_id: str):
     cfg = load_config()

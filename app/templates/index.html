@@ -1,1 +1,47 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OpsDeck</title><link rel="stylesheet" href="/static/app.css"></head><body><header><h1>OpsDeck</h1><p>Give your team safe operations, not SSH access.</p></header><main><h2>Environments</h2><div class="grid">{% for name,env in config.get('environments',{}).items() %}<article class="card"><h3>{{ name|upper }}</h3><p>{{ env.get('description','') }}</p>{% if env.get('kubernetes') %}<b>Namespaces</b><ul>{% for ns in env['kubernetes'].get('namespaces',[]) %}<li>{{ ns }}</li>{% endfor %}</ul>{% endif %}</article>{% endfor %}</div><h2>Services</h2><div class="grid">{% for name,s in config.get('services',{}).items() %}<article class="card"><h3>{{ s.get('display_name',name) }}</h3><p>{{ s.get('description','') }}</p></article>{% endfor %}</div></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OpsDeck</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header>
+    <h1>OpsDeck</h1>
+    <p>Environment health, diagnostics and safe operations</p>
+  </header>
+  <main>
+    <h2>Environments</h2>
+    <div class="grid">
+      {% for name,env in config.get('environments',{}).items() %}
+      <article class="card">
+        <h3>{{ name|upper }}</h3>
+        <p>{{ env.get('description','') }}</p>
+        {% if env.get('kubernetes') %}
+        <b>Namespaces</b>
+        <ul class="namespace-list">
+          {% for ns in env['kubernetes'].get('namespaces',[]) %}
+          <li>
+            <span>{{ ns }}</span>
+            <a class="button" href="/api/health/kubernetes/{{ name }}/{{ ns }}">Diagnostics</a>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+
+    <h2>Services</h2>
+    <div class="grid">
+      {% for name,s in config.get('services',{}).items() %}
+      <article class="card">
+        <h3>{{ s.get('display_name',name) }}</h3>
+        <p>{{ s.get('description','') }}</p>
+      </article>
+      {% endfor %}
+    </div>
+  </main>
+</body>
+</html>

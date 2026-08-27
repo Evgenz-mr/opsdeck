@@ -61,6 +61,64 @@ IFT
 
 Для первого запуска используйте read-only ServiceAccount/Role/RoleBinding там, где это возможно.
 
+Готовые минимальные RBAC-манифесты находятся в:
+
+```text
+deploy/kubernetes/service-account.yaml
+deploy/kubernetes/diagnostics-rbac.yaml
+```
+
+ServiceAccount создается один раз в каждом подключаемом кластере:
+
+```bash
+kubectl apply -f deploy/kubernetes/service-account.yaml
+```
+
+Role и RoleBinding применяются отдельно только в разрешенные namespaces:
+
+```bash
+kubectl -n monitoring apply -f deploy/kubernetes/diagnostics-rbac.yaml
+kubectl -n payments apply -f deploy/kubernetes/diagnostics-rbac.yaml
+kubectl -n integration apply -f deploy/kubernetes/diagnostics-rbac.yaml
+```
+
+Проверьте, что ServiceAccount может читать Pods, но не Secrets:
+
+```bash
+kubectl auth can-i list pods -n payments \
+  --as=system:serviceaccount:opsdeck:opsdeck
+kubectl auth can-i get secrets -n payments \
+  --as=system:serviceaccount:opsdeck:opsdeck
+```
+
+Ожидаемый результат: `yes`, затем `no`.
+
+Создайте отдельный `secrets/kubeconfig` из read-only ServiceAccount. Для каждого
+реального context выполните helper; второй аргумент должен совпадать с context
+в `config/opsdeck.yaml`:
+
+```bash
+mkdir -p secrets
+./scripts/add-kubeconfig-context.sh <real-dev-context> dev secrets/kubeconfig
+./scripts/add-kubeconfig-context.sh <real-stable-context> stable secrets/kubeconfig
+./scripts/add-kubeconfig-context.sh <real-sandbox-context> sandbox secrets/kubeconfig
+./scripts/add-kubeconfig-context.sh <real-ift-context> ift secrets/kubeconfig
+```
+
+Helper по умолчанию запрашивает token на 24 часа; кластер может ограничить
+фактический срок. Это подходит для первого теста. Для постоянной работы нужно
+подключить принятый в вашей платформе возобновляемый способ аутентификации.
+Администраторский kubeconfig в OpsDeck подключать нельзя.
+
+При нестандартном расположении добавьте в `.env`:
+
+```dotenv
+OPSDECK_KUBECONFIG_HOST=/absolute/path/to/opsdeck-kubeconfig
+```
+
+Файл `secrets/kubeconfig`, каталог `secrets/` и `.env` исключены из Git.
+Подробнее: `docs/KUBERNETES_HEALTH.md`.
+
 ## 5. Настройка VM inventory
 
 В `config/opsdeck.yaml` замените тестовые IP/hostname на реальные значения.

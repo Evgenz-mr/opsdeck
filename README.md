@@ -2,7 +2,7 @@
 
 **Self-service operations portal for engineering teams.**
 
-> Give your team safe operations, not SSH access.
+> Environment health, diagnostics and safe operations.
 
 Русская документация: [docs/README_RU.md](docs/README_RU.md)  
 English documentation: [docs/README_EN.md](docs/README_EN.md)

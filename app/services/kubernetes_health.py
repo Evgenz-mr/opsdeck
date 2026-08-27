@@ -1,22 +1,51 @@
+import os
+
 from kubernetes import client, config
 
-def namespace_health(environment: str, context: str, namespace: str):
-    try:
-        config.load_kube_config(context=context)
-        core = client.CoreV1Api()
-        apps = client.AppsV1Api()
-        batch = client.BatchV1Api()
-        autoscaling = client.AutoscalingV2Api()
-        policy = client.PolicyV1Api()
 
-        pods = core.list_namespaced_pod(namespace).items
-        deps = apps.list_namespaced_deployment(namespace).items
-        sts = apps.list_namespaced_stateful_set(namespace).items
-        jobs = batch.list_namespaced_job(namespace).items
-        pvcs = core.list_namespaced_persistent_volume_claim(namespace).items
-        hpas = autoscaling.list_namespaced_horizontal_pod_autoscaler(namespace).items
-        pdbs = policy.list_namespaced_pod_disruption_budget(namespace).items
-        events = core.list_namespaced_event(namespace).items
+REQUEST_TIMEOUT_SECONDS = 10
+
+
+def _api_client(context: str, kubeconfig_path: str | None, mode: str):
+    if mode == "incluster":
+        config.load_incluster_config()
+        return client.ApiClient()
+
+    if not context:
+        raise ValueError("Kubernetes context is not configured")
+
+    config_file = kubeconfig_path or os.getenv("OPSDECK_KUBECONFIG")
+    return config.new_client_from_config(
+        config_file=config_file,
+        context=context,
+        persist_config=False,
+    )
+
+
+def namespace_health(
+    environment: str,
+    context: str,
+    namespace: str,
+    kubeconfig_path: str | None = None,
+    mode: str = "kubeconfig",
+):
+    try:
+        api_client = _api_client(context, kubeconfig_path, mode)
+        core = client.CoreV1Api(api_client)
+        apps = client.AppsV1Api(api_client)
+        batch = client.BatchV1Api(api_client)
+        autoscaling = client.AutoscalingV2Api(api_client)
+        policy = client.PolicyV1Api(api_client)
+
+        timeout = REQUEST_TIMEOUT_SECONDS
+        pods = core.list_namespaced_pod(namespace, _request_timeout=timeout).items
+        deps = apps.list_namespaced_deployment(namespace, _request_timeout=timeout).items
+        sts = apps.list_namespaced_stateful_set(namespace, _request_timeout=timeout).items
+        jobs = batch.list_namespaced_job(namespace, _request_timeout=timeout).items
+        pvcs = core.list_namespaced_persistent_volume_claim(namespace, _request_timeout=timeout).items
+        hpas = autoscaling.list_namespaced_horizontal_pod_autoscaler(namespace, _request_timeout=timeout).items
+        pdbs = policy.list_namespaced_pod_disruption_budget(namespace, _request_timeout=timeout).items
+        events = core.list_namespaced_event(namespace, _request_timeout=timeout).items
 
         out = {
             'environment': environment,
@@ -30,6 +59,7 @@ def namespace_health(environment: str, context: str, namespace: str):
             'hpas': [],
             'pdbs': [],
             'warnings': [],
+            'summary': {},
         }
 
         def degrade():
@@ -86,6 +116,14 @@ def namespace_health(environment: str, context: str, namespace: str):
             {'reason': e.reason, 'message': e.message, 'object': f"{e.involved_object.kind}/{e.involved_object.name}"}
             for e in warning_events[:20]
         ]
+        out['summary'] = {
+            'deployments': len(out['deployments']),
+            'statefulsets': len(out['statefulsets']),
+            'pods': len(out['pods']),
+            'jobs': len(out['jobs']),
+            'pvcs': len(out['pvcs']),
+            'warning_events': len(out['warnings']),
+        }
         return out
     except Exception as exc:
         return {'environment': environment, 'namespace': namespace, 'state': 'unknown', 'error': str(exc)}

@@ -5,21 +5,25 @@ environments:
   dev:
     description: Development Kubernetes environment
     kubernetes:
+      mode: kubeconfig
       context: dev
       namespaces: [monitoring, payments, integration]
   stable:
     description: Stable integration environment
     kubernetes:
+      mode: kubeconfig
       context: stable
       namespaces: [monitoring, payments, integration]
   sandbox:
     description: Sandbox environment
     kubernetes:
+      mode: kubeconfig
       context: sandbox
       namespaces: [sandbox]
   ift:
     description: IFT environment
     kubernetes:
+      mode: kubeconfig
       context: ift
       namespaces: [monitoring, payments, integration]
 

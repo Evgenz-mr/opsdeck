@@ -9,10 +9,11 @@ services:
       OPSDECK_CONFIG: /app/config/opsdeck.yaml
       OPSDECK_DB_URL: sqlite+aiosqlite:////data/opsdeck.db
       OPSDECK_APPROVALS_ENABLED: "false"
+      OPSDECK_KUBECONFIG: /home/opsdeck/.kube/config
     volumes:
       - opsdeck-data:/data
       - ~/.ssh:/home/opsdeck/.ssh:ro
-      - ~/.kube:/home/opsdeck/.kube:ro
+      - ${OPSDECK_KUBECONFIG_HOST:-./secrets/kubeconfig}:/home/opsdeck/.kube/config:ro
     read_only: true
     tmpfs:
       - /tmp
