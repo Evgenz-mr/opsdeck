@@ -19,6 +19,6 @@ set +a
 : "${OPSDECK_DATA_DIR:?Set OPSDECK_DATA_DIR in .env}"
 
 exec podman-compose \
-  --in-pod false \
+  -t identity \
   -f "$OPSDECK_PROJECT_DIR/podman-compose.yml" \
   "$@"
