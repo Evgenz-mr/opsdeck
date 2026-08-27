@@ -7,6 +7,8 @@
 Русская документация: [docs/README_RU.md](docs/README_RU.md)  
 English documentation: [docs/README_EN.md](docs/README_EN.md)
 
+Запуск через Podman Compose: [docs/PODMAN_COMPOSE_RU.md](docs/PODMAN_COMPOSE_RU.md)
+
 Deployment guide RU: [docs/DEPLOYMENT_RU.md](docs/DEPLOYMENT_RU.md)  
 Deployment guide EN: [docs/DEPLOYMENT_EN.md](docs/DEPLOYMENT_EN.md)
 

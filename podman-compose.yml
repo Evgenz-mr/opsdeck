@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  opsdeck:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: localhost/opsdeck:1.0.0
+    container_name: opsdeck
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      OPSDECK_CONFIG: /app/config/opsdeck.yaml
+      OPSDECK_DB_URL: sqlite+aiosqlite:////data/opsdeck.db
+      OPSDECK_APPROVALS_ENABLED: "false"
+      OPSDECK_KUBECONFIG: /home/opsdeck/.kube/config
+    volumes:
+      - opsdeck-data:/data:U
+      - ./config/opsdeck.yaml:/app/config/opsdeck.yaml:ro,Z
+      - ${OPSDECK_KUBECONFIG_HOST}:/home/opsdeck/.kube/config:ro,Z
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+volumes:
+  opsdeck-data:
