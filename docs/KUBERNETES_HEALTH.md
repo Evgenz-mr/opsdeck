@@ -84,7 +84,13 @@ mkdir -p secrets
 ./scripts/add-kubeconfig-context.sh <real-stable-context> stable secrets/kubeconfig
 ./scripts/add-kubeconfig-context.sh <real-sandbox-context> sandbox secrets/kubeconfig
 ./scripts/add-kubeconfig-context.sh <real-ift-context> ift secrets/kubeconfig
+sudo chown 10001:100 secrets/kubeconfig
+sudo chmod 0400 secrets/kubeconfig
 ```
+
+UID `10001` and GID `100` belong to the `opsdeck:users` process inside the
+container. These ownership settings let OpsDeck read the bind-mounted file
+without making its token readable to other host users.
 
 The helper requests a 24-hour token by default. Override the requested duration
 for testing with `OPSDECK_TOKEN_DURATION=8h`; the API server may cap it. Before

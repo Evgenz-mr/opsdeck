@@ -103,7 +103,12 @@ mkdir -p secrets
 ./scripts/add-kubeconfig-context.sh <real-stable-context> stable secrets/kubeconfig
 ./scripts/add-kubeconfig-context.sh <real-sandbox-context> sandbox secrets/kubeconfig
 ./scripts/add-kubeconfig-context.sh <real-ift-context> ift secrets/kubeconfig
+chown 10001:100 secrets/kubeconfig
+chmod 0400 secrets/kubeconfig
 ```
+
+`10001:100` — это UID/GID процесса `opsdeck:users` внутри контейнера. Так
+контейнер сможет прочитать bind-mounted файл, а остальные пользователи VM — нет.
 
 Helper по умолчанию запрашивает token на 24 часа; кластер может ограничить
 фактический срок. Это подходит для первого теста. Для постоянной работы нужно
