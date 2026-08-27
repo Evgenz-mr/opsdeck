@@ -5,38 +5,56 @@ environments:
   dev:
     description: Development Kubernetes environment
     kubernetes:
-      context: dev
-      namespaces: [monitoring, payments, integration]
+      mode: kubeconfig
+      context: opsdeck
+      namespaces: [devops-costcalc]
   stable:
     description: Stable integration environment
     kubernetes:
-      context: stable
-      namespaces: [monitoring, payments, integration]
+      mode: kubeconfig
+      context: opsdeck
+      namespaces: [stable]
   sandbox:
     description: Sandbox environment
     kubernetes:
-      context: sandbox
+      mode: kubeconfig
+      context: opsdeck
       namespaces: [sandbox]
   ift:
     description: IFT environment
     kubernetes:
-      context: ift
-      namespaces: [monitoring, payments, integration]
+      mode: kubeconfig
+      context: opsdeck
+      namespaces: [ift]
 
 services:
   victoriametrics:
-    display_name: VictoriaMetrics
-    description: Metrics platform and cluster health
+    display_name: VictoriaMetrics Cluster
+    type: cluster
+    description: vmselect, vminsert and vmstorage health and certificate operations
     targets:
-      stable:
-        vmselect-01:
-          host: 10.20.10.11
+      ift:
+        vminsert-193:
+          display_name: vminsert-193
+          role: vminsert
+          host: vm-szux-pc-vic-193.vdc03.pc.dev.sbt
           user: opsdeck
-          actions: [check-service, update-certificate]
-        vmselect-02:
-          host: 10.20.10.12
+          actions:
+            - renew-victoriametrics-certificate
+        vmselect-194:
+          display_name: vmselect-194
+          role: vmselect
+          host: vm-szux-pc-vic-194.vdc03.pc.dev.sbt
           user: opsdeck
-          actions: [check-service, update-certificate]
+          actions:
+            - renew-victoriametrics-certificate
+        vmstorage-195:
+          display_name: vmstorage-195
+          role: vmstorage
+          host: vm-szux-pc-vic-195.vdc03.pc.dev.sbt
+          user: opsdeck
+          actions:
+            - renew-victoriametrics-certificate
   kafka:
     display_name: Kafka
     description: Broker and consumer health

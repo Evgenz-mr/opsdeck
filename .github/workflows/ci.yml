@@ -1,27 +1,40 @@
 name: ci
+
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
+      - develop
+      - 'release/**'
+
 permissions:
   contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: {python-version: "3.12"}
-      - run: pip install -r requirements.txt
-      - run: python -m compileall app
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Python compile check
+        run: python -m compileall app tests
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
       - name: YAML validation
         run: |
           python - <<'PY'
-          import pathlib,yaml
-          for p in list(pathlib.Path('config').rglob('*.yaml'))+list(pathlib.Path('actions').rglob('*.yaml'))+list(pathlib.Path('runbooks').rglob('*.yaml')):
-              yaml.safe_load(p.read_text()); print('OK',p)
+          import pathlib, yaml
+          paths = list(pathlib.Path('config').rglob('*.yaml')) + list(pathlib.Path('actions').rglob('*.yaml')) + list(pathlib.Path('runbooks').rglob('*.yaml'))
+          for path in paths:
+              yaml.safe_load(path.read_text())
+              print('OK', path)
           PY
-      - name: Validate Compose
+      - name: Compose validation
         run: docker compose config
-      - name: Build container
+      - name: Docker build
         run: docker build -t opsdeck:ci .

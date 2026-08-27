@@ -2,11 +2,15 @@
 
 **Self-service operations portal for engineering teams.**
 
-> Give your team safe operations, not SSH access.
+> Environment health, diagnostics and safe operations.
 
-Русская документация: [docs/README_RU.md](docs/README_RU.md)
-
+Русская документация: [docs/README_RU.md](docs/README_RU.md)  
 English documentation: [docs/README_EN.md](docs/README_EN.md)
+
+Запуск через Podman Compose: [docs/PODMAN_COMPOSE_RU.md](docs/PODMAN_COMPOSE_RU.md)
+
+Deployment guide RU: [docs/DEPLOYMENT_RU.md](docs/DEPLOYMENT_RU.md)  
+Deployment guide EN: [docs/DEPLOYMENT_EN.md](docs/DEPLOYMENT_EN.md)
 
 ## What OpsDeck is
 
@@ -16,34 +20,36 @@ It provides a safe interface for:
 
 - VM operations over SSH;
 - Kubernetes health across DEV / STABLE / SANDBOX / IFT;
-- VictoriaMetrics operational checks;
-- Kafka health and diagnostics;
-- PostgreSQL cluster health;
-- S3 health checks;
-- certificate updates;
-- guided runbooks;
-- audit history;
-- safe predefined actions.
+- VictoriaMetrics cluster checks;
+- Kafka broker/exporter health;
+- PostgreSQL node/role health;
+- S3 endpoint/TLS health;
+- certificate inspection and allowlisted renewal actions;
+- rolling operations and preflight safety policies;
+- guided diagnostics and runbooks;
+- realtime execution events through SSE;
+- service catalog, dependency helpers, incident timeline and maintenance mode;
+- RBAC policy foundations, notifications and audit history.
 
 Arbitrary shell access is intentionally not part of the product.
 
-## MVP
+## Architecture
 
 ```text
 Users
   |
   v
-OpsDeck UI / API
+OpsDeck UI / REST API / SSE
   |
   +-- Kubernetes API
-  +-- SSH actions
+  +-- SSH allowlisted actions
   +-- VictoriaMetrics
   +-- Kafka
   +-- PostgreSQL
   +-- S3
   |
   v
-Audit / Runbooks / Diagnostics
+Health / Actions / Runbooks / Safety / Audit
 ```
 
 Approvals are implemented as a configuration concept but disabled by default:
@@ -52,6 +58,8 @@ Approvals are implemented as a configuration concept but disabled by default:
 approvals:
   enabled: false
 ```
+
+Safety policies work independently of approvals.
 
 ## Quick start
 
@@ -71,8 +79,26 @@ API documentation:
 http://localhost:8080/docs
 ```
 
+Health endpoint:
+
+```text
+GET /healthz
+```
+
+## Branch model
+
+```text
+main
+  ^
+release/1.0.0
+  ^
+develop
+```
+
+`develop` is the integration branch. `release/1.0.0` is the deployment candidate. `main` stays stable until the release is accepted.
+
 ## Project status
 
-Current version: **0.1.0 / MVP**
+Current release candidate: **1.0.0**
 
-The initial implementation focuses on architecture, configuration-driven inventory, Kubernetes health, safe SSH actions and audit logging.
+The first release is intended for controlled internal deployment. Start with read-only health checks, then enable allowlisted VM actions after inventory, SSH permissions and safety policies are verified.

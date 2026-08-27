@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd /home/user_szux-ift
+exec /home/user_szux-ift/secman_certs.sh

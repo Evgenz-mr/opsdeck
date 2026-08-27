@@ -1,10 +1,14 @@
+version: "3.8"
+
 services:
   opsdeck:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: localhost/opsdeck:1.0.0
     container_name: opsdeck
     restart: unless-stopped
-    ports:
-      - "8080:8080"
+    network_mode: host
     environment:
       OPSDECK_CONFIG: /app/config/opsdeck.yaml
       OPSDECK_DB_URL: sqlite+aiosqlite:////data/opsdeck.db
@@ -14,18 +18,15 @@ services:
       OPSDECK_SSH_KNOWN_HOSTS: /home/opsdeck/.ssh/known_hosts
       OPSDECK_SSH_PRIVATE_KEY: /home/opsdeck/.ssh/id_ed25519
     volumes:
-      - opsdeck-data:/data
-      - ./config/opsdeck.yaml:/app/config/opsdeck.yaml:ro
-      - ${OPSDECK_KUBECONFIG_HOST:-./secrets/kubeconfig}:/home/opsdeck/.kube/config:ro
-      - ${OPSDECK_ACTION_TOKEN_FILE_HOST:-./secrets/action-token}:/run/secrets/action-token:ro
-      - ${OPSDECK_SSH_DIR_HOST:-./secrets/ssh}:/home/opsdeck/.ssh:ro
+      - ${OPSDECK_DATA_DIR}:/data:Z
+      - ./config/opsdeck.yaml:/app/config/opsdeck.yaml:ro,Z
+      - ${OPSDECK_KUBECONFIG_HOST}:/home/opsdeck/.kube/config:ro,Z
+      - ${OPSDECK_ACTION_TOKEN_FILE_HOST}:/run/secrets/action-token:ro,Z
+      - ${OPSDECK_SSH_DIR_HOST}:/home/opsdeck/.ssh:ro,Z
     read_only: true
     tmpfs:
       - /tmp
     security_opt:
-      - no-new-privileges:true
+      - no-new-privileges
     cap_drop:
       - ALL
-
-volumes:
-  opsdeck-data:

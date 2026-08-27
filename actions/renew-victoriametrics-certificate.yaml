@@ -1,0 +1,6 @@
+id: renew-victoriametrics-certificate
+name: Renew TLS certificate
+risk: caution
+runner: ssh
+timeout: 300
+command: /usr/bin/sudo -n /usr/local/sbin/opsdeck-renew-vm-cert
